@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState ,useContext} from 'react';
+import { styles } from './Home';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AuthContext } from '../context/AuthContext';
 import {
   View,
   Text,
@@ -10,14 +13,16 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-// import auth from '@react-native-firebase/auth';
-// import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { AuthService } from '../utils/authService';
+import { CommonActions } from '@react-navigation/native';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const { setUser } = useContext(AuthContext);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -25,41 +30,41 @@ export default function LoginScreen({ navigation }) {
       return;
     }
 
-    setLoading(false);
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
-      return;
+    setLoading(true);
+    try {
+        const userData = await AuthService.login(email, password);
+        await AsyncStorage.setItem('userSession', JSON.stringify(userData));
+        setUser(userData);
+      // Reset navigation stack to prevent going back to login
+    //   navigation.dispatch(
+    //     CommonActions.reset({
+    //       index: 0,
+    //       routes: [{ name: 'Main' }],
+    //     })
+    //   );
+    } catch (error) {
+      Alert.alert('Login Error', error.message);
+    } finally {
+      setLoading(false);
     }
-//     try {
-//       await auth().signInWithEmailAndPassword(email, password);
-//     } catch (error) {
-//       Alert.alert('Login Error', error.message);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
+  };
 
-//   const handleGoogleSignIn = async () => {
-//     try {
-//       setLoading(true);
-//       // Check if your device supports Google Play
-//       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-      
-//       // Get the users ID token
-//       const { idToken } = await GoogleSignin.signIn();
-      
-//       // Create a Google credential with the token
-//       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-      
-//       // Sign-in the user with the credential
-//       await auth().signInWithCredential(googleCredential);
-//     } catch (error) {
-//       Alert.alert('Google Sign-In Error', error.message);
-//     } finally {
-//       setLoading(false);
-//     }
-  }
-  
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      await AuthService.googleSignIn();
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'Main' }],
+        })
+      );
+    } catch (error) {
+      Alert.alert('Google Sign-In Error', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView 
@@ -130,93 +135,3 @@ export default function LoginScreen({ navigation }) {
     </KeyboardAvoidingView>
   );
 }
-
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#6366F1',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#64748b',
-  },
-  form: {
-    width: '100%',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginBottom: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  inputIcon: {
-    marginRight: 12,
-  },
-  input: {
-    flex: 1,
-    paddingVertical: 16,
-    fontSize: 16,
-    color: '#1e293b',
-  },
-  button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  loginButton: {
-    backgroundColor: '#6366F1',
-  },
-  signupButton: {
-    backgroundColor: '#10b981',
-  },
-  googleButton: {
-    backgroundColor: '#dc2626',
-  },
-  buttonIcon: {
-    marginRight: 8,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  linkButton: {
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  linkText: {
-    fontSize: 14,
-    color: '#64748b',
-  },
-  linkTextBold: {
-    color: '#6366F1',
-    fontWeight: '600',
-  },
-});

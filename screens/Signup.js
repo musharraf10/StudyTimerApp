@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { styles } from './Home';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AuthContext } from '../context/AuthContext';
 import {
   View,
   Text,
@@ -10,9 +13,9 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-// import auth from '@react-native-firebase/auth';
-// import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { AuthService } from '../utils/authService';
+import { CommonActions } from '@react-navigation/native';
 
 export default function SignupScreen({ navigation }) {
   const [name, setName] = useState('');
@@ -20,6 +23,7 @@ export default function SignupScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const { setUser } = useContext(AuthContext);
   const handleSignup = async () => {
     if (!name || !email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
@@ -31,34 +35,41 @@ export default function SignupScreen({ navigation }) {
       return;
     }
 
-//     setLoading(true);
-//     try {
-//       const userCredential = await auth().createUserWithEmailAndPassword(email, password);
-//       // Update the user's display name
-//       await userCredential.user.updateProfile({
-//         displayName: name,
-//       });
-//     } catch (error) {
-//       Alert.alert('Signup Error', error.message);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
+    setLoading(true);
+    try {
+     const userData =  await AuthService.signup(name, email, password);
+     await AsyncStorage.setItem('userSession', JSON.stringify(userData));
+    setUser(userData);
+        // Reset navigation stack to prevent going back to signup
+    //   navigation.dispatch(
+    //     CommonActions.reset({
+    //       index: 0,
+    //       routes: [{ name: 'Main' }],
+    //     })
+    //   );
+    } catch (error) {
+      Alert.alert('Signup Error', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-//   const handleGoogleSignUp = async () => {
-//     try {
-//       setLoading(true);
-//       await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-//       const { idToken } = await GoogleSignin.signIn();
-//       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-//       await auth().signInWithCredential(googleCredential);
-//     } catch (error) {
-//       Alert.alert('Google Sign-Up Error', error.message);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-  }
+  const handleGoogleSignUp = async () => {
+    setLoading(true);
+    try {
+      await AuthService.googleSignIn();
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'Main' }],
+        })
+      );
+    } catch (error) {
+      Alert.alert('Google Sign-Up Error', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView 
@@ -140,92 +151,3 @@ export default function SignupScreen({ navigation }) {
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#6366F1',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#64748b',
-  },
-  form: {
-    width: '100%',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginBottom: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  inputIcon: {
-    marginRight: 12,
-  },
-  input: {
-    flex: 1,
-    paddingVertical: 16,
-    fontSize: 16,
-    color: '#1e293b',
-  },
-  button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  loginButton: {
-    backgroundColor: '#6366F1',
-  },
-  signupButton: {
-    backgroundColor: '#10b981',
-  },
-  googleButton: {
-    backgroundColor: '#dc2626',
-  },
-  buttonIcon: {
-    marginRight: 8,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  linkButton: {
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  linkText: {
-    fontSize: 14,
-    color: '#64748b',
-  },
-  linkTextBold: {
-    color: '#6366F1',
-    fontWeight: '600',
-  },
-});

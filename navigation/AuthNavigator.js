@@ -5,7 +5,7 @@ import SignupScreen from '../screens/Signup';
 
 const Stack = createStackNavigator();
 
-export default function AuthNavigator() {
+export default function AuthNavigator(rootNavigation) {
   return (
     <Stack.Navigator 
       initialRouteName="Login"
@@ -13,7 +13,10 @@ export default function AuthNavigator() {
         headerShown: false,
       }}
     >
-      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Login">
+        {props => <LoginScreen {...props} rootNavigation={rootNavigation} />}
+      </Stack.Screen>
+
       <Stack.Screen name="Signup" component={SignupScreen} />
     </Stack.Navigator>
   );
