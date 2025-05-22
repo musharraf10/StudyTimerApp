@@ -59,7 +59,7 @@ export default function TabNavigator() {
         name="ReadSpace" 
         component={ReadSpaceScreen}
         options={{
-          title: 'ReadSpace',
+          title: 'Reading Space',
         }}
       />
       <Tab.Screen 
