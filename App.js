@@ -1,12 +1,14 @@
 // App.js
-import React, { useContext } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import { ActivityIndicator, View, StyleSheet } from 'react-native';
-
-import { AuthProvider, AuthContext } from './context/AuthContext';
-import AuthNavigator from './navigation/AuthNavigator';
-import TabNavigator from './navigation/TabNavigator';
+import React, { useContext } from "react";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import { ActivityIndicator, View, StyleSheet } from "react-native";
+import { AuthProvider, AuthContext } from "./context/AuthContext";
+import { StudyProvider } from "./context/StudyContext";
+import AuthNavigator from "./navigation/AuthNavigator";
+import TabNavigator from "./navigation/TabNavigator";
+import ReadingModeScreen from "./screens/ReadingScreen";
 
 const Stack = createStackNavigator();
 
@@ -25,7 +27,10 @@ function AppContent() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {user ? (
-          <Stack.Screen name="Main" component={TabNavigator} />
+          <>
+            <Stack.Screen name="Main" component={TabNavigator} />
+            <Stack.Screen name="ReadingMode" component={ReadingModeScreen} />
+          </>
         ) : (
           <Stack.Screen name="Auth" component={AuthNavigator} />
         )}
@@ -37,7 +42,11 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <StudyProvider>
+        <SafeAreaProvider>
+          <AppContent />
+        </SafeAreaProvider>
+      </StudyProvider>
     </AuthProvider>
   );
 }
@@ -45,8 +54,8 @@ export default function App() {
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
   },
 });
