@@ -5,7 +5,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import HomeScreen from "../screens/Home";
 import ReadSpaceScreen from "../screens/ReadSpace";
-import BooksScreen from "../screens/Books";
 import ToDoScreen from "../screens/ToDo";
 import ProfileScreen from "../screens/Profile";
 
@@ -22,7 +21,6 @@ export default function TabNavigator() {
 
           if (route.name === "Home") iconName = "home";
           else if (route.name === "ReadSpace") iconName = "menu-book";
-          else if (route.name === "Books") iconName = "library-books";
           else if (route.name === "ToDo") iconName = "check-circle";
           else if (route.name === "Profile") iconName = "person";
 
@@ -57,13 +55,6 @@ export default function TabNavigator() {
         component={ReadSpaceScreen}
         options={{
           title: "Reading Space",
-        }}
-      />
-      <Tab.Screen
-        name="Books"
-        component={BooksScreen}
-        options={{
-          title: "Books",
         }}
       />
       <Tab.Screen
