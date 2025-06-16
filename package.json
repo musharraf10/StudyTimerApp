@@ -33,16 +33,19 @@
     "expo-web-browser": "~14.1.6",
     "firebase": "^11.8.1",
     "lucide-react": "^0.511.0",
+    "lucide-react-native": "^0.515.0",
     "path-browserify": "^1.0.1",
     "pdfjs-dist": "^5.2.133",
+    "react": "19.0.0",
+    "react-native": "0.79.2",
     "react-native-feather": "^1.1.2",
+    "react-native-motion": "^1.0.5",
     "react-native-pdf": "^6.7.7",
+    "react-native-reanimated": "^3.18.0",
     "react-native-safe-area-context": "^5.4.0",
     "react-native-screens": "^4.10.0",
     "react-native-vector-icons": "^10.2.0",
-    "react-native-webview": "^13.13.5",
-    "react": "19.0.0",
-    "react-native": "0.79.2"
+    "react-native-webview": "^13.13.5"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
