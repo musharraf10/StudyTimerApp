@@ -161,7 +161,6 @@ export default function ReadSpaceScreen({ navigation }) {
       { id: "room", label: "Reading Room" },
       { id: "completed", label: "Completed" },
       { id: "notes", label: "Notes" },
-      { id: "badges", label: "Streaks" },
     ];
     return (
       <ScrollView
@@ -227,8 +226,6 @@ export default function ReadSpaceScreen({ navigation }) {
             setShowNoteModal={setShowNoteModal}
           />
         );
-      case "badges":
-        return <Badges />;
       default:
         return (
           <ContinueReading

@@ -6,37 +6,39 @@ import {
   TouchableOpacity,
   ScrollView,
   Modal,
-  Animated,
   StyleSheet,
   Dimensions,
-  StatusBar,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import Icon from "react-native-vector-icons/Feather";
+import {
+  X,
+  Clock,
+  Calendar,
+  Sun,
+  Target,
+  Plus,
+  Trash2,
+  Check,
+} from "lucide-react-native";
 
-const { width, height } = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 
 const StudySettings = ({
-  visible = true,
-  onClose = () => {},
-  initialSettings = {},
-  onSave = () => {},
+  visible,
+  onClose,
+  userSettings,
+  setUserSettings,
+  onSave,
 }) => {
   const [settings, setSettings] = useState({
-    // Study Targets
-    dailyHoursTarget: 2,
-    weeklyHoursTarget: 14,
-    dailySessionsTarget: 3,
-    weeklySessionsTarget: 21,
-
-    // Study Time Preferences
-    preferredStudyStartTime: "09:00",
-    preferredStudyEndTime: "17:00",
-    bestFocusTime: "morning",
-    studyDaysOfWeek: [1, 2, 3, 4, 5],
-
-    // Goals
-    currentGoals: [
+    dailyHoursTarget: userSettings.dailyHoursTarget || 2,
+    weeklyHoursTarget: userSettings.weeklyHoursTarget || 14,
+    dailySessionsTarget: userSettings.dailySessionsTarget || 3,
+    weeklySessionsTarget: userSettings.weeklySessionsTarget || 21,
+    preferredStudyStartTime: userSettings.preferredStudyStartTime || "09:00",
+    preferredStudyEndTime: userSettings.preferredStudyEndTime || "17:00",
+    bestFocusTime: userSettings.bestFocusTime || "morning",
+    studyDaysOfWeek: userSettings.studyDaysOfWeek || [1, 2, 3, 4, 5],
+    currentGoals: userSettings.currentGoals || [
       {
         id: 1,
         title: "Complete JEE Main Mathematics",
@@ -59,8 +61,6 @@ const StudySettings = ({
         completed: false,
       },
     ],
-
-    ...initialSettings,
   });
 
   const [newGoal, setNewGoal] = useState({
@@ -69,25 +69,6 @@ const StudySettings = ({
     priority: "medium",
   });
   const [showAddGoal, setShowAddGoal] = useState(false);
-  const [slideAnim] = useState(new Animated.Value(height));
-  const [fadeAnim] = useState(new Animated.Value(0));
-
-  React.useEffect(() => {
-    if (visible) {
-      Animated.parallel([
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
-  }, [visible]);
 
   const daysOfWeek = [
     { id: 1, name: "Mon", fullName: "Monday" },
@@ -100,41 +81,17 @@ const StudySettings = ({
   ];
 
   const focusTimeOptions = [
-    {
-      id: "morning",
-      label: "Morning",
-      time: "6-12 AM",
-      icon: "sunrise",
-      colors: ["#fb923c", "#fbbf24"],
-    },
-    {
-      id: "afternoon",
-      label: "Afternoon",
-      time: "12-6 PM",
-      icon: "sun",
-      colors: ["#fbbf24", "#f97316"],
-    },
-    {
-      id: "evening",
-      label: "Evening",
-      time: "6-10 PM",
-      icon: "sunset",
-      colors: ["#f97316", "#a855f7"],
-    },
-    {
-      id: "night",
-      label: "Night",
-      time: "10 PM-2 AM",
-      icon: "moon",
-      colors: ["#a855f7", "#4f46e5"],
-    },
+    { id: "morning", label: "Morning", time: "6-12 AM" },
+    { id: "afternoon", label: "Afternoon", time: "12-6 PM" },
+    { id: "evening", label: "Evening", time: "6-10 PM" },
+    { id: "night", label: "Night", time: "10 PM-2 AM" },
   ];
 
-  const priorityColors = {
-    high: ["#ef4444", "#dc2626"],
-    medium: ["#eab308", "#f97316"],
-    low: ["#10b981", "#059669"],
-  };
+  const priorityOptions = [
+    { value: "high", label: "High", color: "#EF4444" },
+    { value: "medium", label: "Medium", color: "#F59E0B" },
+    { value: "low", label: "Low", color: "#10B981" },
+  ];
 
   const updateSetting = (key, value) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
@@ -184,41 +141,18 @@ const StudySettings = ({
     onClose();
   };
 
-  const handleClose = () => {
-    Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: height,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start(() => onClose());
-  };
-
-  const StudyTargetCard = ({ target, value, onUpdate }) => (
-    <View style={styles.targetCard}>
-      <LinearGradient
-        colors={target.colors}
-        style={styles.targetIconContainer}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <Icon name={target.icon} size={20} color="white" />
-      </LinearGradient>
-      <Text style={styles.targetLabel}>{target.label}</Text>
-      <View style={styles.targetInputContainer}>
+  const StudyTargetCard = ({ target, value, onUpdate, unit }) => (
+    <View style={styles.preferenceSection}>
+      <Text style={styles.preferenceLabel}>{target}</Text>
+      <View style={styles.preferenceInputContainer}>
         <TextInput
-          style={styles.targetInput}
+          style={styles.preferenceInput}
           value={value.toString()}
           onChangeText={(text) => onUpdate(parseInt(text) || 0)}
           keyboardType="numeric"
           maxLength={2}
         />
-        {target.unit && <Text style={styles.targetUnit}>{target.unit}</Text>}
+        {unit && <Text style={styles.preferenceUnit}>{unit}</Text>}
       </View>
     </View>
   );
@@ -227,25 +161,12 @@ const StudySettings = ({
     <TouchableOpacity
       style={[styles.focusTimeCard, isSelected && styles.focusTimeCardSelected]}
       onPress={onSelect}
-      activeOpacity={0.7}
     >
-      {isSelected ? (
-        <LinearGradient
-          colors={option.colors}
-          style={styles.focusTimeCardGradient}
-        >
-          <Icon name={option.icon} size={24} color="white" />
-          <Text style={styles.focusTimeLabel}>{option.label}</Text>
-          <Text style={styles.focusTimeTime}>{option.time}</Text>
-          <View style={styles.focusTimeCheck}>
-            <Icon name="check" size={16} color="white" />
-          </View>
-        </LinearGradient>
-      ) : (
-        <View style={styles.focusTimeCardContent}>
-          <Icon name={option.icon} size={24} color="#6b7280" />
-          <Text style={styles.focusTimeLabelUnselected}>{option.label}</Text>
-          <Text style={styles.focusTimeTimeUnselected}>{option.time}</Text>
+      <Text style={styles.focusTimeLabel}>{option.label}</Text>
+      <Text style={styles.focusTimeTime}>{option.time}</Text>
+      {isSelected && (
+        <View style={styles.focusTimeCheck}>
+          <Check size={16} color="#6366F1" />
         </View>
       )}
     </TouchableOpacity>
@@ -253,159 +174,79 @@ const StudySettings = ({
 
   return (
     <Modal
+      animationType="slide"
+      transparent={true}
       visible={visible}
-      transparent
-      animationType="none"
-      statusBarTranslucent
-      onRequestClose={handleClose}
+      onRequestClose={onClose}
     >
-      <StatusBar backgroundColor="rgba(0,0,0,0.6)" barStyle="light-content" />
-      <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
-        <Animated.View
-          style={[styles.container, { transform: [{ translateY: slideAnim }] }]}
-        >
-          {/* Header */}
-          <LinearGradient
-            colors={["#4f46e5", "#7c3aed", "#ec4899"]}
-            style={styles.header}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-          >
-            <View style={styles.headerContent}>
-              <View>
-                <Text style={styles.headerTitle}>Study Settings</Text>
-                <Text style={styles.headerSubtitle}>
-                  Customize your learning experience
-                </Text>
-              </View>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={handleClose}
-                activeOpacity={0.7}
-              >
-                <Icon name="x" size={24} color="white" />
-              </TouchableOpacity>
-            </View>
-          </LinearGradient>
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Study Settings</Text>
+            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <X size={24} color="#6B7280" />
+            </TouchableOpacity>
+          </View>
 
           <ScrollView
-            style={styles.content}
+            style={styles.modalContent}
             showsVerticalScrollIndicator={false}
           >
             {/* Study Targets */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <LinearGradient
-                  colors={["#3b82f6", "#06b6d4"]}
-                  style={styles.sectionIcon}
-                >
-                  <Icon name="target" size={20} color="white" />
-                </LinearGradient>
-                <Text style={styles.sectionTitle}>Study Targets</Text>
-              </View>
-
-              <View style={styles.targetsGrid}>
-                <StudyTargetCard
-                  target={{
-                    icon: "clock",
-                    label: "Daily Hours",
-                    colors: ["#3b82f6", "#06b6d4"],
-                    unit: "hrs",
-                  }}
-                  value={settings.dailyHoursTarget}
-                  onUpdate={(value) => updateSetting("dailyHoursTarget", value)}
-                />
-                <StudyTargetCard
-                  target={{
-                    icon: "calendar",
-                    label: "Weekly Hours",
-                    colors: ["#10b981", "#14b8a6"],
-                    unit: "hrs",
-                  }}
-                  value={settings.weeklyHoursTarget}
-                  onUpdate={(value) =>
-                    updateSetting("weeklyHoursTarget", value)
-                  }
-                />
-                <StudyTargetCard
-                  target={{
-                    icon: "book-open",
-                    label: "Daily Sessions",
-                    colors: ["#f59e0b", "#f97316"],
-                    unit: "",
-                  }}
-                  value={settings.dailySessionsTarget}
-                  onUpdate={(value) =>
-                    updateSetting("dailySessionsTarget", value)
-                  }
-                />
-                <StudyTargetCard
-                  target={{
-                    icon: "trending-up",
-                    label: "Weekly Sessions",
-                    colors: ["#ec4899", "#f43f5e"],
-                    unit: "",
-                  }}
-                  value={settings.weeklySessionsTarget}
-                  onUpdate={(value) =>
-                    updateSetting("weeklySessionsTarget", value)
-                  }
-                />
-              </View>
-            </View>
+            <StudyTargetCard
+              target="Daily Hours Target"
+              value={settings.dailyHoursTarget}
+              onUpdate={(value) => updateSetting("dailyHoursTarget", value)}
+              unit="hrs"
+              icon={<Clock size={20} color="#6B7280" />}
+            />
+            <StudyTargetCard
+              target="Weekly Hours Target"
+              value={settings.weeklyHoursTarget}
+              onUpdate={(value) => updateSetting("weeklyHoursTarget", value)}
+              unit="hrs"
+              icon={<Calendar size={20} color="#6B7280" />}
+            />
+            <StudyTargetCard
+              target="Daily Sessions Target"
+              value={settings.dailySessionsTarget}
+              onUpdate={(value) => updateSetting("dailySessionsTarget", value)}
+              icon={<Clock size={20} color="#6B7280" />}
+            />
+            <StudyTargetCard
+              target="Weekly Sessions Target"
+              value={settings.weeklySessionsTarget}
+              onUpdate={(value) => updateSetting("weeklySessionsTarget", value)}
+              icon={<Calendar size={20} color="#6B7280" />}
+            />
 
             {/* Study Time Preferences */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <LinearGradient
-                  colors={["#7c3aed", "#4f46e5"]}
-                  style={styles.sectionIcon}
-                >
-                  <Icon name="clock" size={20} color="white" />
-                </LinearGradient>
-                <Text style={styles.sectionTitle}>Study Time Preferences</Text>
-              </View>
-
-              <View style={styles.timePreferencesGrid}>
-                <View style={styles.timeInputCard}>
-                  <Text style={styles.timeInputLabel}>
-                    Preferred Start Time
-                  </Text>
-                  <TextInput
-                    style={styles.timeInput}
-                    value={settings.preferredStudyStartTime}
-                    onChangeText={(text) =>
-                      updateSetting("preferredStudyStartTime", text)
-                    }
-                    placeholder="09:00"
-                  />
-                </View>
-                <View style={styles.timeInputCard}>
-                  <Text style={styles.timeInputLabel}>Preferred End Time</Text>
-                  <TextInput
-                    style={styles.timeInput}
-                    value={settings.preferredStudyEndTime}
-                    onChangeText={(text) =>
-                      updateSetting("preferredStudyEndTime", text)
-                    }
-                    placeholder="17:00"
-                  />
-                </View>
-              </View>
+            <View style={styles.preferenceSection}>
+              <Text style={styles.preferenceLabel}>Preferred Start Time</Text>
+              <TextInput
+                style={styles.preferenceInput}
+                value={settings.preferredStudyStartTime}
+                onChangeText={(text) =>
+                  updateSetting("preferredStudyStartTime", text)
+                }
+                placeholder="09:00"
+              />
+            </View>
+            <View style={styles.preferenceSection}>
+              <Text style={styles.preferenceLabel}>Preferred End Time</Text>
+              <TextInput
+                style={styles.preferenceInput}
+                value={settings.preferredStudyEndTime}
+                onChangeText={(text) =>
+                  updateSetting("preferredStudyEndTime", text)
+                }
+                placeholder="17:00"
+              />
             </View>
 
             {/* Best Focus Time */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <LinearGradient
-                  colors={["#f97316", "#ec4899"]}
-                  style={styles.sectionIcon}
-                >
-                  <Icon name="sun" size={20} color="white" />
-                </LinearGradient>
-                <Text style={styles.sectionTitle}>Best Focus Time</Text>
-              </View>
-
+            <View style={styles.preferenceSection}>
+              <Text style={styles.preferenceLabel}>Best Focus Time</Text>
               <View style={styles.focusTimeGrid}>
                 {focusTimeOptions.map((option) => (
                   <FocusTimeCard
@@ -419,17 +260,8 @@ const StudySettings = ({
             </View>
 
             {/* Study Days */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <LinearGradient
-                  colors={["#10b981", "#059669"]}
-                  style={styles.sectionIcon}
-                >
-                  <Icon name="calendar" size={20} color="white" />
-                </LinearGradient>
-                <Text style={styles.sectionTitle}>Study Days</Text>
-              </View>
-
+            <View style={styles.preferenceSection}>
+              <Text style={styles.preferenceLabel}>Study Days</Text>
               <View style={styles.daysContainer}>
                 {daysOfWeek.map((day) => {
                   const isSelected = settings.studyDaysOfWeek.includes(day.id);
@@ -441,48 +273,30 @@ const StudySettings = ({
                         isSelected && styles.dayButtonSelected,
                       ]}
                       onPress={() => toggleDayOfWeek(day.id)}
-                      activeOpacity={0.7}
                     >
-                      {isSelected ? (
-                        <LinearGradient
-                          colors={["#4f46e5", "#7c3aed"]}
-                          style={styles.dayButtonGradient}
-                        >
-                          <Text style={styles.dayButtonTextSelected}>
-                            {day.name}
-                          </Text>
-                        </LinearGradient>
-                      ) : (
-                        <Text style={styles.dayButtonText}>{day.name}</Text>
-                      )}
+                      <Text
+                        style={[
+                          styles.dayButtonText,
+                          isSelected && styles.dayButtonTextSelected,
+                        ]}
+                      >
+                        {day.name}
+                      </Text>
                     </TouchableOpacity>
                   );
                 })}
               </View>
             </View>
 
-            {/* Goals */}
-            <View style={styles.section}>
+            {/* Exam Goals */}
+            <View style={styles.preferenceSection}>
               <View style={styles.sectionHeader}>
-                <LinearGradient
-                  colors={["#f43f5e", "#ec4899"]}
-                  style={styles.sectionIcon}
-                >
-                  <Icon name="target" size={20} color="white" />
-                </LinearGradient>
-                <Text style={styles.sectionTitle}>Exam Goals</Text>
+                <Text style={styles.preferenceLabel}>Exam Goals</Text>
                 <TouchableOpacity
                   style={styles.addGoalButton}
                   onPress={() => setShowAddGoal(true)}
-                  activeOpacity={0.7}
                 >
-                  <LinearGradient
-                    colors={["#4f46e5", "#7c3aed"]}
-                    style={styles.addGoalButtonGradient}
-                  >
-                    <Icon name="plus" size={16} color="white" />
-                    <Text style={styles.addGoalButtonText}>Add Goal</Text>
-                  </LinearGradient>
+                  <Plus size={20} color="#6366F1" />
                 </TouchableOpacity>
               </View>
 
@@ -495,10 +309,9 @@ const StudySettings = ({
                     onChangeText={(text) =>
                       setNewGoal({ ...newGoal, title: text })
                     }
-                    placeholder="Enter exam goal (e.g., Complete JEE Main Mathematics)"
+                    placeholder="Enter exam goal"
                     multiline
                   />
-
                   <View style={styles.goalFormRow}>
                     <TextInput
                       style={styles.goalDeadlineInput}
@@ -506,303 +319,174 @@ const StudySettings = ({
                       onChangeText={(text) =>
                         setNewGoal({ ...newGoal, deadline: text })
                       }
-                      placeholder="2025-08-30"
+                      placeholder="YYYY-MM-DD"
                     />
-
                     <View style={styles.priorityButtons}>
-                      {["high", "medium", "low"].map((priority) => (
+                      {priorityOptions.map((priority) => (
                         <TouchableOpacity
-                          key={priority}
+                          key={priority.value}
                           style={[
                             styles.priorityButton,
-                            newGoal.priority === priority &&
-                              styles.priorityButtonSelected,
+                            newGoal.priority === priority.value && {
+                              backgroundColor: priority.color,
+                            },
                           ]}
-                          onPress={() => setNewGoal({ ...newGoal, priority })}
-                          activeOpacity={0.7}
+                          onPress={() =>
+                            setNewGoal({ ...newGoal, priority: priority.value })
+                          }
                         >
-                          {newGoal.priority === priority ? (
-                            <LinearGradient
-                              colors={priorityColors[priority]}
-                              style={styles.priorityButtonGradient}
-                            >
-                              <Text style={styles.priorityButtonTextSelected}>
-                                {priority.charAt(0).toUpperCase() +
-                                  priority.slice(1)}
-                              </Text>
-                            </LinearGradient>
-                          ) : (
-                            <Text style={styles.priorityButtonText}>
-                              {priority.charAt(0).toUpperCase() +
-                                priority.slice(1)}
-                            </Text>
-                          )}
+                          <Text
+                            style={[
+                              styles.priorityButtonText,
+                              newGoal.priority === priority.value &&
+                                styles.priorityButtonTextSelected,
+                            ]}
+                          >
+                            {priority.label}
+                          </Text>
                         </TouchableOpacity>
                       ))}
                     </View>
                   </View>
-
                   <View style={styles.goalFormActions}>
                     <TouchableOpacity
                       style={styles.cancelButton}
                       onPress={() => setShowAddGoal(false)}
-                      activeOpacity={0.7}
                     >
                       <Text style={styles.cancelButtonText}>Cancel</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.addButton}
                       onPress={addGoal}
-                      activeOpacity={0.7}
                     >
-                      <LinearGradient
-                        colors={["#4f46e5", "#7c3aed"]}
-                        style={styles.addButtonGradient}
-                      >
-                        <Text style={styles.addButtonText}>Add Goal</Text>
-                      </LinearGradient>
+                      <Text style={styles.addButtonText}>Add Goal</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
               )}
 
               {/* Goals List */}
-              <View style={styles.goalsList}>
-                {settings.currentGoals.map((goal) => (
-                  <View key={goal.id} style={styles.goalCard}>
-                    <View style={styles.goalContent}>
-                      <TouchableOpacity
-                        style={[
-                          styles.goalCheckbox,
-                          goal.completed && styles.goalCheckboxCompleted,
-                        ]}
-                        onPress={() => toggleGoalCompletion(goal.id)}
-                        activeOpacity={0.7}
-                      >
-                        {goal.completed && (
-                          <Icon name="check" size={14} color="white" />
-                        )}
-                      </TouchableOpacity>
-
-                      <View style={styles.goalInfo}>
-                        <Text
-                          style={[
-                            styles.goalTitle,
-                            goal.completed && styles.goalTitleCompleted,
-                          ]}
-                        >
-                          {goal.title}
-                        </Text>
-                        {goal.deadline && (
-                          <Text style={styles.goalDeadline}>
-                            Due: {new Date(goal.deadline).toLocaleDateString()}
-                          </Text>
-                        )}
-                      </View>
-
-                      <LinearGradient
-                        colors={priorityColors[goal.priority]}
-                        style={styles.priorityBadge}
-                      >
-                        <Text style={styles.priorityBadgeText}>
-                          {goal.priority.toUpperCase()}
-                        </Text>
-                      </LinearGradient>
-
-                      <TouchableOpacity
-                        style={styles.deleteButton}
-                        onPress={() => deleteGoal(goal.id)}
-                        activeOpacity={0.7}
-                      >
-                        <Icon name="trash-2" size={16} color="#ef4444" />
-                      </TouchableOpacity>
-                    </View>
+              {settings.currentGoals.map((goal) => (
+                <View key={goal.id} style={styles.goalCard}>
+                  <TouchableOpacity
+                    style={[
+                      styles.goalCheckbox,
+                      goal.completed && styles.goalCheckboxCompleted,
+                    ]}
+                    onPress={() => toggleGoalCompletion(goal.id)}
+                  >
+                    {goal.completed && <Check size={14} color="#fff" />}
+                  </TouchableOpacity>
+                  <View style={styles.goalInfo}>
+                    <Text
+                      style={[
+                        styles.goalTitle,
+                        goal.completed && styles.goalTitleCompleted,
+                      ]}
+                    >
+                      {goal.title}
+                    </Text>
+                    {goal.deadline && (
+                      <Text style={styles.goalDeadline}>
+                        Due: {new Date(goal.deadline).toLocaleDateString()}
+                      </Text>
+                    )}
                   </View>
-                ))}
-              </View>
+                  <View
+                    style={[
+                      styles.priorityBadge,
+                      {
+                        backgroundColor: priorityOptions.find(
+                          (p) => p.value === goal.priority
+                        ).color,
+                      },
+                    ]}
+                  >
+                    <Text style={styles.priorityBadgeText}>
+                      {goal.priority.toUpperCase()}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => deleteGoal(goal.id)}
+                  >
+                    <Trash2 size={16} color="#EF4444" />
+                  </TouchableOpacity>
+                </View>
+              ))}
             </View>
-          </ScrollView>
 
-          {/* Footer */}
-          <View style={styles.footer}>
-            <TouchableOpacity
-              style={styles.cancelFooterButton}
-              onPress={handleClose}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.cancelFooterButtonText}>Cancel</Text>
+            {/* Save Button */}
+            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+              <Text style={styles.saveButtonText}>Save Settings</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={handleSave}
-              activeOpacity={0.7}
-            >
-              <LinearGradient
-                colors={["#4f46e5", "#7c3aed"]}
-                style={styles.saveButtonGradient}
-              >
-                <Icon name="check" size={18} color="white" />
-                <Text style={styles.saveButtonText}>Save Settings</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-      </Animated.View>
+          </ScrollView>
+        </View>
+      </View>
     </Modal>
   );
 };
 
-export const styles = StyleSheet.create({
-  overlay: {
+const styles = StyleSheet.create({
+  modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 16,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
   },
-  container: {
-    backgroundColor: "white",
-    borderRadius: 24,
-    width: "100%",
+  modalContainer: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     maxHeight: height * 0.9,
-    overflow: "hidden",
+    paddingBottom: 20,
   },
-  header: {
-    paddingHorizontal: 24,
-    paddingVertical: 20,
-    paddingTop: 40,
-  },
-  headerContent: {
+  modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
   },
-  headerTitle: {
-    fontSize: 24,
+  modalTitle: {
+    fontSize: 20,
     fontWeight: "bold",
-    color: "white",
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: "rgba(255, 255, 255, 0.8)",
-    marginTop: 4,
+    color: "#1F2937",
   },
   closeButton: {
-    padding: 8,
-    borderRadius: 12,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    padding: 4,
   },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
+  modalContent: {
+    marginTop: 16,
+    paddingHorizontal: 20,
   },
-  section: {
-    marginVertical: 16,
+  preferenceSection: {
+    marginBottom: 24,
   },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  sectionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#1f2937",
-    flex: 1,
-  },
-  targetsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-  },
-  targetCard: {
-    backgroundColor: "white",
-    borderRadius: 16,
-    padding: 16,
-    width: "48%",
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  targetIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  targetLabel: {
-    fontSize: 14,
-    color: "#6b7280",
-    marginBottom: 8,
-  },
-  targetInputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  targetInput: {
-    width: 48,
-    height: 40,
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 8,
-    textAlign: "center",
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#1f2937",
-  },
-  targetUnit: {
-    fontSize: 14,
-    color: "#6b7280",
-    marginLeft: 8,
-    fontWeight: "500",
-  },
-  timePreferencesGrid: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  timeInputCard: {
-    backgroundColor: "white",
-    borderRadius: 16,
-    padding: 16,
-    width: "48%",
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  timeInputLabel: {
-    fontSize: 14,
-    color: "#6b7280",
-    marginBottom: 8,
-    fontWeight: "500",
-  },
-  timeInput: {
-    height: 44,
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 12,
-    paddingHorizontal: 12,
+  preferenceLabel: {
     fontSize: 16,
-    fontWeight: "500",
-    color: "#1f2937",
+    fontWeight: "600",
+    color: "#1F2937",
+    marginBottom: 12,
+  },
+  preferenceInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F9FAFB",
+    borderRadius: 8,
+    padding: 12,
+  },
+  preferenceInput: {
+    flex: 1,
+    fontSize: 16,
+    color: "#1F2937",
+    paddingVertical: 4,
+  },
+  preferenceUnit: {
+    fontSize: 16,
+    color: "#6B7280",
+    marginLeft: 8,
   },
   focusTimeGrid: {
     flexDirection: "row",
@@ -811,63 +495,31 @@ export const styles = StyleSheet.create({
   },
   focusTimeCard: {
     width: "48%",
-    marginBottom: 12,
-    borderRadius: 16,
-    overflow: "hidden",
+    backgroundColor: "#F9FAFB",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
   focusTimeCardSelected: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  focusTimeCardGradient: {
-    padding: 16,
-    minHeight: 100,
-    justifyContent: "space-between",
-    position: "relative",
-  },
-  focusTimeCardContent: {
-    backgroundColor: "white",
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    padding: 16,
-    minHeight: 100,
-    justifyContent: "space-between",
+    borderColor: "#6366F1",
+    backgroundColor: "#EEF2FF",
   },
   focusTimeLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "white",
-    marginTop: 8,
-  },
-  focusTimeLabelUnselected: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#1f2937",
-    marginTop: 8,
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#1F2937",
   },
   focusTimeTime: {
     fontSize: 12,
-    color: "rgba(255, 255, 255, 0.8)",
-    marginTop: 4,
-  },
-  focusTimeTimeUnselected: {
-    fontSize: 12,
-    color: "#6b7280",
+    color: "#6B7280",
     marginTop: 4,
   },
   focusTimeCheck: {
     position: "absolute",
-    top: 12,
-    right: 12,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    justifyContent: "center",
-    alignItems: "center",
+    top: 8,
+    right: 8,
   },
   daysContainer: {
     flexDirection: "row",
@@ -876,67 +528,49 @@ export const styles = StyleSheet.create({
   },
   dayButton: {
     width: "13%",
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: "#F9FAFB",
+    alignItems: "center",
     marginBottom: 8,
-    borderRadius: 12,
-    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
   dayButtonSelected: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  dayButtonGradient: {
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    alignItems: "center",
+    backgroundColor: "#EEF2FF",
+    borderColor: "#6366F1",
   },
   dayButtonText: {
     fontSize: 14,
-    fontWeight: "500",
-    color: "#6b7280",
-    textAlign: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    backgroundColor: "#f3f4f6",
+    color: "#6B7280",
   },
   dayButtonTextSelected: {
-    fontSize: 14,
+    color: "#6366F1",
     fontWeight: "600",
-    color: "white",
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
   },
   addGoalButton: {
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  addGoalButtonGradient: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  addGoalButtonText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "white",
-    marginLeft: 8,
+    padding: 4,
   },
   addGoalForm: {
-    backgroundColor: "#f8fafc",
-    borderRadius: 16,
+    backgroundColor: "#F9FAFB",
+    borderRadius: 8,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: "#E5E7EB",
   },
   goalTitleInput: {
-    backgroundColor: "white",
+    backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    borderColor: "#E5E7EB",
+    borderRadius: 8,
+    padding: 12,
     fontSize: 16,
     marginBottom: 12,
     minHeight: 48,
@@ -947,109 +581,80 @@ export const styles = StyleSheet.create({
     marginBottom: 12,
   },
   goalDeadlineInput: {
-    backgroundColor: "white",
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
     flex: 1,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
     marginRight: 12,
   },
   priorityButtons: {
     flexDirection: "row",
   },
   priorityButton: {
-    marginLeft: 8,
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  priorityButtonSelected: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  priorityButtonGradient: {
     paddingHorizontal: 12,
     paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: "#F9FAFB",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    marginLeft: 8,
   },
   priorityButtonText: {
     fontSize: 12,
-    fontWeight: "500",
-    color: "#6b7280",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: "white",
-    borderWidth: 1,
-    borderColor: "#d1d5db",
+    color: "#6B7280",
   },
   priorityButtonTextSelected: {
-    fontSize: 12,
+    color: "#fff",
     fontWeight: "600",
-    color: "white",
   },
   goalFormActions: {
     flexDirection: "row",
     justifyContent: "flex-end",
   },
   cancelButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 12,
+    padding: 8,
   },
   cancelButtonText: {
     fontSize: 14,
-    color: "#6b7280",
+    color: "#6B7280",
   },
   addButton: {
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  addButtonGradient: {
-    paddingHorizontal: 20,
+    backgroundColor: "#6366F1",
+    borderRadius: 8,
+    paddingHorizontal: 16,
     paddingVertical: 8,
   },
   addButtonText: {
     fontSize: 14,
+    color: "#fff",
     fontWeight: "600",
-    color: "white",
-  },
-  goalsList: {
-    marginTop: 8,
   },
   goalCard: {
-    backgroundColor: "white",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  goalContent: {
     flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
   goalCheckbox: {
     width: 24,
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: "#d1d5db",
+    borderColor: "#E5E7EB",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
   },
   goalCheckboxCompleted: {
-    backgroundColor: "#10b981",
-    borderColor: "#10b981",
+    backgroundColor: "#10B981",
+    borderColor: "#10B981",
   },
   goalInfo: {
     flex: 1,
@@ -1058,15 +663,15 @@ export const styles = StyleSheet.create({
   goalTitle: {
     fontSize: 16,
     fontWeight: "500",
-    color: "#1f2937",
+    color: "#1F2937",
   },
   goalTitleCompleted: {
     textDecorationLine: "line-through",
-    color: "#6b7280",
+    color: "#6B7280",
   },
   goalDeadline: {
     fontSize: 12,
-    color: "#6b7280",
+    color: "#6B7280",
     marginTop: 4,
   },
   priorityBadge: {
@@ -1078,45 +683,22 @@ export const styles = StyleSheet.create({
   priorityBadgeText: {
     fontSize: 10,
     fontWeight: "600",
-    color: "white",
+    color: "#fff",
   },
   deleteButton: {
     padding: 8,
   },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    alignItems: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    backgroundColor: "#f9fafb",
-    borderTopWidth: 1,
-    borderTopColor: "#e5e7eb",
-  },
-  cancelFooterButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    marginRight: 16,
-  },
-  cancelFooterButtonText: {
-    fontSize: 16,
-    color: "#6b7280",
-  },
   saveButton: {
+    backgroundColor: "#6366F1",
     borderRadius: 12,
-    overflow: "hidden",
-  },
-  saveButtonGradient: {
-    flexDirection: "row",
+    paddingVertical: 16,
     alignItems: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    marginTop: 16,
   },
   saveButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "white",
-    marginLeft: 8,
+    color: "#fff",
   },
 });
 
