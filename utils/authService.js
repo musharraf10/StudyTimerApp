@@ -1,87 +1,139 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AuthService as FirebaseAuthService } from '../services/authService';
+import { NotificationService } from '../services/notificationService';
+import { AnalyticsService } from '../services/analyticsService';
+
+// This file maintains compatibility with your existing frontend code
+// while using the new Firebase backend services
 
 export const AuthService = {
-  login: async (email, password) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(async () => {
-        if (email && password && password.length >= 6) {
-          const userData = {
-            id: Date.now().toString(),
-            email: email,
-            displayName: email.split("@")[0],
-            loginMethod: "email",
-            createdAt: new Date().toISOString(),
-          };
-          await AsyncStorage.setItem("userSession", JSON.stringify(userData));
-          resolve(userData);
-        } else {
-          reject(new Error("Invalid email or password"));
-        }
-      }, 1000);
-    });
-  },
-
-  signup: async (name, email, password) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(async () => {
-        if (name && email && password && password.length >= 6) {
-          const userData = {
-            id: Date.now().toString(),
-            email: email,
-            displayName: name,
-            loginMethod: "email",
-            createdAt: new Date().toISOString(),
-          };
-          await AsyncStorage.setItem("userSession", JSON.stringify(userData));
-          resolve(userData);
-        } else {
-          reject(new Error("Please provide valid information"));
-        }
-      }, 1000);
-    });
-  },
-
-  googleSignIn: async () => {
-    return new Promise((resolve) => {
-      setTimeout(async () => {
-        const userData = {
-          id: "google_" + Date.now().toString(),
-          email: "user@gmail.com",
-          displayName: "Google User",
-          loginMethod: "google",
-          createdAt: new Date().toISOString(),
-        };
-        await AsyncStorage.setItem("userSession", JSON.stringify(userData));
-        resolve(userData);
-      }, 1500);
-    });
-  },
-
-  getCurrentUser: async () => {
+  // Initialize authentication
+  initialize: async () => {
     try {
-      const userData = await AsyncStorage.getItem("userSession");
-      return userData ? JSON.parse(userData) : null;
+      // Initialize notifications
+      await NotificationService.initialize();
+      
+      // Setup notification listeners
+      NotificationService.setupNotificationListeners();
+      
+      return true;
     } catch (error) {
-      return null;
+      console.error('Auth service initialization error:', error);
+      return false;
     }
   },
 
-  logout: async () => {
-    await AsyncStorage.removeItem("userSession");
+  // Login with email and password
+  login: async (email, password) => {
+    try {
+      const userData = await FirebaseAuthService.login(email, password);
+      
+      // Track login event
+      await AnalyticsService.trackEvent('user_login', {
+        method: 'email',
+        timestamp: new Date().toISOString()
+      });
+      
+      return userData;
+    } catch (error) {
+      await AnalyticsService.trackEvent('login_failed', {
+        method: 'email',
+        error: error.message
+      });
+      throw error;
+    }
   },
 
+  // Sign up with email and password
+  signup: async (name, email, password) => {
+    try {
+      const userData = await FirebaseAuthService.signup(name, email, password);
+      
+      // Track signup event
+      await AnalyticsService.trackEvent('user_signup', {
+        method: 'email',
+        timestamp: new Date().toISOString()
+      });
+      
+      return userData;
+    } catch (error) {
+      await AnalyticsService.trackEvent('signup_failed', {
+        method: 'email',
+        error: error.message
+      });
+      throw error;
+    }
+  },
+
+  // Google Sign In
+  googleSignIn: async () => {
+    try {
+      // For now, this is a placeholder
+      // In a real implementation, you'd use expo-auth-session or similar
+      throw new Error("Google Sign-In requires additional setup for mobile apps");
+    } catch (error) {
+      await AnalyticsService.trackEvent('google_signin_failed', {
+        error: error.message
+      });
+      throw error;
+    }
+  },
+
+  // Get current user
+  getCurrentUser: async () => {
+    return await FirebaseAuthService.getCurrentUser();
+  },
+
+  // Logout
+  logout: async () => {
+    try {
+      await AnalyticsService.trackEvent('user_logout');
+      await FirebaseAuthService.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw error;
+    }
+  },
+
+  // Update avatar
   updateAvatar: async (avatarUri) => {
     try {
-      const userData = await AsyncStorage.getItem("userSession");
-      if (userData) {
-        const user = JSON.parse(userData);
-        user.avatar = avatarUri;
-        await AsyncStorage.setItem("userSession", JSON.stringify(user));
-        return user;
-      }
-      throw new Error("No user session found");
+      const userData = await FirebaseAuthService.updateAvatar(avatarUri);
+      
+      await AnalyticsService.trackEvent('avatar_updated');
+      
+      return userData;
     } catch (error) {
-      throw new Error("Failed to update avatar");
+      console.error('Avatar update error:', error);
+      throw error;
     }
   },
+
+  // Change password
+  changePassword: async (currentPassword, newPassword) => {
+    try {
+      await FirebaseAuthService.changePassword(currentPassword, newPassword);
+      
+      await AnalyticsService.trackEvent('password_changed');
+      
+    } catch (error) {
+      console.error('Password change error:', error);
+      throw error;
+    }
+  },
+
+  // Deactivate account
+  deactivateAccount: async () => {
+    try {
+      await AnalyticsService.trackEvent('account_deactivated');
+      await FirebaseAuthService.deactivateAccount();
+    } catch (error) {
+      console.error('Account deactivation error:', error);
+      throw error;
+    }
+  },
+
+  // Initialize auth state listener
+  initializeAuthListener: (callback) => {
+    return FirebaseAuthService.initializeAuthListener(callback);
+  }
 };

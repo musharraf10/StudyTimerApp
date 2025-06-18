@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "FocusVault",
-    "slug": "Unlock Your Study Power",
+    "slug": "focusvault-study-app",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/logoYellow.png",
@@ -28,14 +28,31 @@
       "permissions": [
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "CAMERA",
+        "RECORD_AUDIO",
+        "NOTIFICATIONS"
       ],
-      "package": "com.musharaf01.UnlockYourStudyPower"
+      "package": "com.focusvault.studyapp"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "output": "server"
     },
-    "plugins": ["expo-web-browser"]
+    "plugins": [
+      "expo-web-browser",
+      "expo-notifications",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your study notes.",
+          "cameraPermission": "The app accesses your camera to let you take photos for your study materials."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id-here"
+      }
+    }
   }
 }

@@ -1,6 +1,6 @@
-// AuthContext.js
 import React, { createContext, useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AuthService } from '../utils/authService';
+import { AnalyticsService } from '../services/analyticsService';
 
 export const AuthContext = createContext();
 
@@ -8,27 +8,40 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [initializing, setInitializing] = useState(true);
 
-  const checkAuthState = async () => {
-    try {
-      const userData = await AsyncStorage.getItem('userSession');
-      if (userData) {
-        setUser(JSON.parse(userData));
-      } else {
-        setUser(null);
-      }
-    } catch (error) {
-      console.log('Auth check failed:', error);
-    } finally {
-      setInitializing(false);
-    }
-  };
-
   useEffect(() => {
-    checkAuthState();
+    // Initialize auth service
+    AuthService.initialize();
+
+    // Set up auth state listener
+    const unsubscribe = AuthService.initializeAuthListener((userData) => {
+      setUser(userData);
+      setInitializing(false);
+      
+      if (userData) {
+        // Track app open when user is authenticated
+        AnalyticsService.trackAppOpen();
+      }
+    });
+
+    // Track app close when component unmounts
+    return () => {
+      if (user) {
+        AnalyticsService.trackAppClose();
+      }
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
+  const value = {
+    user,
+    setUser,
+    initializing
+  };
+
   return (
-    <AuthContext.Provider value={{ user, setUser, initializing }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
