@@ -35,7 +35,8 @@ function AppContent() {
       <View style={styles.errorContainer}>
         <Text style={styles.errorTitle}>Connection Error</Text>
         <Text style={styles.errorText}>
-          Unable to connect to the server. Please check your internet connection and try again.
+          Unable to connect to the server. Please check your internet connection
+          and try again.
         </Text>
         <Text style={styles.errorDetails}>{error}</Text>
       </View>

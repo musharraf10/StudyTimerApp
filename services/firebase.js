@@ -1,36 +1,42 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
-import { getAuth, connectAuthEmulator } from "firebase/auth";
-import { getStorage, connectStorageEmulator } from "firebase/storage";
-import { getMessaging, getToken, onMessage, isSupported } from "firebase/messaging";
-import { Platform } from 'react-native';
+import { getFirestore } from "firebase/firestore";
+import { initializeAuth, getReactNativePersistence } from "firebase/auth";
+import { getStorage } from "firebase/storage";
+import {
+  getMessaging,
+  getToken,
+  onMessage,
+  isSupported,
+} from "firebase/messaging";
+import { Platform } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Your Firebase project configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-  authDomain: "focusvault-study.firebaseapp.com",
-  projectId: "focusvault-study",
-  storageBucket: "focusvault-study.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abcdefghijklmnopqrstuvwxyz",
-  measurementId: "G-XXXXXXXXXX"
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore
+// ✅ Correct: Initialize Auth for React Native
+const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage),
+});
+
+// Initialize other services
 const db = getFirestore(app);
-
-// Initialize Firebase Authentication
-const auth = getAuth(app);
-
-// Initialize Firebase Storage
 const storage = getStorage(app);
 
-// Initialize Firebase Cloud Messaging (only for web/supported platforms)
+// Web-only Firebase Cloud Messaging
 let messaging = null;
-if (Platform.OS === 'web') {
+if (Platform.OS === "web") {
   isSupported().then((supported) => {
     if (supported) {
       messaging = getMessaging(app);
@@ -38,35 +44,4 @@ if (Platform.OS === 'web') {
   });
 }
 
-// Development emulator setup (uncomment for local development)
-// if (__DEV__) {
-//   connectFirestoreEmulator(db, 'localhost', 8080);
-//   connectAuthEmulator(auth, 'http://localhost:9099');
-//   connectStorageEmulator(storage, 'localhost', 9199);
-// }
-
-// Get FCM token (web only)
-async function getFCMToken() {
-  if (!messaging) return null;
-  
-  try {
-    const token = await getToken(messaging, {
-      vapidKey: "YOUR_VAPID_KEY_HERE"
-    });
-    console.log("FCM token:", token);
-    return token;
-  } catch (error) {
-    console.error("Error getting FCM token:", error);
-    return null;
-  }
-}
-
-// Handle incoming messages (web only)
-if (messaging) {
-  onMessage(messaging, (payload) => {
-    console.log("Received foreground message:", payload);
-    // Handle the message here
-  });
-}
-
-export { db, auth, storage, messaging, getFCMToken, app };
+export { db, auth, storage, app };
