@@ -1,46 +1,28 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { getStorage } from "firebase/storage";
+import { initializeAuth, getReactNativePersistence } from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Your Firebase project configuration
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyADWzzuSqY8swo27mSJcJ4qjCyoX1-kiz8",
+  authDomain: "study-app-94e14.firebaseapp.com",
+  projectId: "study-app-94e14",
+  storageBucket: "study-app-94e14.firebasestorage.app",
+  messagingSenderId: "831732683981",
+  appId: "1:831732683981:web:d9d69bb1b073ebcbebc584",
+  measurementId: "G-SCKL049L4Y",
 };
 
-// Initialize Firebase
+// Init app
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore
-const db = getFirestore(app);
-
-// Initialize Firebase Authentication
-const auth = getAuth(app);
-
-// Initialize Firebase Cloud Messaging
-const messaging = getMessaging(app);
-
-// Get FCM token
-async function getFCMToken() {
-  try {
-    const token = await getToken(messaging, {
-      vapidKey: "YOUR_VAPID_KEY",
-    });
-    console.log("FCM token:", token);
-    return token;
-  } catch (error) {
-    console.error("Error getting FCM token:", error);
-  }
-}
-
-// Handle incoming messages
-onMessage(messaging, (payload) => {
-  console.log("Received message:", payload);
+// ✅ MUST initialize auth using this way for React Native
+const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage),
 });
 
-export { db, auth, messaging, getFCMToken };
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+export { app, auth, db, storage };

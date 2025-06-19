@@ -1,6 +1,7 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthContext } from "../context/AuthContext";
+import { useGoogleAuth } from "../hooks/useGoogleAuth";
 import {
   View,
   Text,
@@ -31,6 +32,7 @@ export default function SignupScreen({ navigation }) {
   const [passwordStrength, setPasswordStrength] = useState(0);
 
   const { setUser } = useContext(AuthContext);
+  const { promptGoogleSignIn } = useGoogleAuth();
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -161,10 +163,7 @@ export default function SignupScreen({ navigation }) {
           })
         );
       } catch (error) {
-        Alert.alert(
-          "Signup Error",
-          error.message || "An unexpected error occurred."
-        );
+        Alert.alert("Signup Error", error.message || "Unexpected error.");
       } finally {
         setLoading(false);
       }
@@ -175,7 +174,9 @@ export default function SignupScreen({ navigation }) {
     animateButtonPress(async () => {
       setLoading(true);
       try {
-        await AuthService.googleSignIn();
+        await promptGoogleSignIn();
+        const userData = await AuthService.googleSignIn();
+        setUser(userData);
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
