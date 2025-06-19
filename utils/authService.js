@@ -1,72 +1,87 @@
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  GoogleAuthProvider,
-  signInWithCredential,
-} from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
-import * as Google from "expo-auth-session/providers/google";
-import { auth, db } from "../services/firebase";
-import * as WebBrowser from "expo-web-browser";
-
-WebBrowser.maybeCompleteAuthSession();
-
-// 📌 Save profile to Firestore
-const saveUserProfile = async (uid, userData) => {
-  const userRef = doc(db, "users", uid);
-  const snap = await getDoc(userRef);
-  if (!snap.exists()) {
-    await setDoc(userRef, {
-      ...userData,
-      createdAt: new Date().toISOString(),
-    });
-  }
-};
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const AuthService = {
-  // ✅ Email Registration
-  signup: async (name, email, password) => {
-    const result = await createUserWithEmailAndPassword(auth, email, password);
-    const user = result.user;
-    await saveUserProfile(user.uid, {
-      fullName: name,
-      email: user.email,
-      loginMethod: "email",
-    });
-    return user;
-  },
-
-  // ✅ Email Login
   login: async (email, password) => {
-    const result = await signInWithEmailAndPassword(auth, email, password);
-    return result.user;
-  },
-
-  // ✅ Google Sign In
-  googleSignIn: async (idToken, accessToken) => {
-    const credential = GoogleAuthProvider.credential(idToken, accessToken);
-    const result = await signInWithCredential(auth, credential);
-    const user = result.user;
-    await saveUserProfile(user.uid, {
-      fullName: user.displayName,
-      email: user.email,
-      loginMethod: "google",
+    return new Promise((resolve, reject) => {
+      setTimeout(async () => {
+        if (email && password && password.length >= 6) {
+          const userData = {
+            id: Date.now().toString(),
+            email: email,
+            displayName: email.split("@")[0],
+            loginMethod: "email",
+            createdAt: new Date().toISOString(),
+          };
+          await AsyncStorage.setItem("userSession", JSON.stringify(userData));
+          resolve(userData);
+        } else {
+          reject(new Error("Invalid email or password"));
+        }
+      }, 1000);
     });
-    return user;
   },
 
-  // ✅ Logout
+  signup: async (name, email, password) => {
+    return new Promise((resolve, reject) => {
+      setTimeout(async () => {
+        if (name && email && password && password.length >= 6) {
+          const userData = {
+            id: Date.now().toString(),
+            email: email,
+            displayName: name,
+            loginMethod: "email",
+            createdAt: new Date().toISOString(),
+          };
+          await AsyncStorage.setItem("userSession", JSON.stringify(userData));
+          resolve(userData);
+        } else {
+          reject(new Error("Please provide valid information"));
+        }
+      }, 1000);
+    });
+  },
+
+  googleSignIn: async () => {
+    return new Promise((resolve) => {
+      setTimeout(async () => {
+        const userData = {
+          id: "google_" + Date.now().toString(),
+          email: "user@gmail.com",
+          displayName: "Google User",
+          loginMethod: "google",
+          createdAt: new Date().toISOString(),
+        };
+        await AsyncStorage.setItem("userSession", JSON.stringify(userData));
+        resolve(userData);
+      }, 1500);
+    });
+  },
+
+  getCurrentUser: async () => {
+    try {
+      const userData = await AsyncStorage.getItem("userSession");
+      return userData ? JSON.parse(userData) : null;
+    } catch (error) {
+      return null;
+    }
+  },
+
   logout: async () => {
-    await signOut(auth);
+    await AsyncStorage.removeItem("userSession");
   },
 
-  // ✅ Get current logged in user
-  getCurrentUser: () => auth.currentUser,
-
-  // ✅ Auth state change listener
-  onAuthStateChanged: (callback) => {
-    return onAuthStateChanged(auth, callback);
+  updateAvatar: async (avatarUri) => {
+    try {
+      const userData = await AsyncStorage.getItem("userSession");
+      if (userData) {
+        const user = JSON.parse(userData);
+        user.avatar = avatarUri;
+        await AsyncStorage.setItem("userSession", JSON.stringify(user));
+        return user;
+      }
+      throw new Error("No user session found");
+    } catch (error) {
+      throw new Error("Failed to update avatar");
+    }
   },
 };
