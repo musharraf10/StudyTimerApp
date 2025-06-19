@@ -1,0 +1,350 @@
+.login-screen {
+  min-height: 100vh;
+  min-height: calc(var(--vh, 1vh) * 100);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.background-elements {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.floating-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.circle-1 {
+  width: 200px;
+  height: 200px;
+  top: -100px;
+  right: -50px;
+}
+
+.circle-2 {
+  width: 160px;
+  height: 160px;
+  bottom: -80px;
+  left: -60px;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 400px;
+  z-index: 1;
+}
+
+.login-content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 40px 30px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.logo-container {
+  margin-bottom: 16px;
+}
+
+.app-logo {
+  font-size: 28px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.login-subtitle {
+  color: #6B7280;
+  font-size: 16px;
+  font-weight: 400;
+  margin: 0;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #F9FAFB;
+  border: 2px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 0 16px;
+  transition: all 0.2s ease;
+}
+
+.input-container:focus-within {
+  border-color: #6366F1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.input-icon {
+  color: #9CA3AF;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.form-input {
+  flex: 1;
+  height: 56px;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  color: #1F2937;
+}
+
+.form-input::placeholder {
+  color: #9CA3AF;
+}
+
+.form-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.password-toggle {
+  background: none;
+  border: none;
+  color: #9CA3AF;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.password-toggle:hover {
+  color: #6B7280;
+}
+
+.password-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-button {
+  height: 56px;
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.login-button:hover:not(:disabled) {
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+}
+
+.login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.loading-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 10px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #E5E7EB;
+}
+
+.divider span {
+  padding: 0 16px;
+  color: #9CA3AF;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.google-button {
+  height: 56px;
+  background: white;
+  color: #374151;
+  border: 2px solid #E5E7EB;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.google-button:hover:not(:disabled) {
+  border-color: #D1D5DB;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.google-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.google-icon {
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #4285F4, #34A853, #FBBC05, #EA4335);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.auth-link {
+  text-align: center;
+  color: #6B7280;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+.link-text {
+  color: #6366F1;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.link-text:hover {
+  color: #4F46E5;
+}
+
+/* Mobile optimizations */
+@media (max-width: 767px) {
+  .login-screen {
+    padding: 16px;
+  }
+  
+  .login-content {
+    padding: 32px 24px;
+    border-radius: 20px;
+  }
+  
+  .app-logo {
+    font-size: 24px;
+  }
+  
+  .login-subtitle {
+    font-size: 14px;
+  }
+  
+  .form-input {
+    height: 52px;
+    font-size: 16px;
+  }
+  
+  .login-button,
+  .google-button {
+    height: 52px;
+    font-size: 15px;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .login-content {
+    padding: 48px 40px;
+  }
+  
+  .app-logo {
+    font-size: 32px;
+  }
+}
+
+/* Desktop optimizations */
+@media (min-width: 1024px) {
+  .login-screen {
+    background: #F8FAFC;
+  }
+  
+  .login-content {
+    background: white;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .login-content {
+    border: 0.5px solid rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .floating-circle {
+    animation: none;
+  }
+  
+  .loading-icon {
+    animation: none;
+  }
+}
+
+/* Focus styles for better accessibility */
+.form-input:focus,
+.login-button:focus,
+.google-button:focus,
+.password-toggle:focus {
+  outline: 2px solid #6366F1;
+  outline-offset: 2px;
+}
