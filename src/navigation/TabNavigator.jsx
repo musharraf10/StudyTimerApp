@@ -5,16 +5,16 @@ import { Home, BookOpen, CheckCircle, User } from 'lucide-react'
 
 // Screen Components
 import HomeScreen from '../screens/Home'
-import ReadSpaceScreen from '../screens/ReadSpace'
-import ToDoScreen from '../screens/ToDo'
-import ProfileScreen from '../screens/Profile'
+// import ReadSpaceScreen from '../screens/ReadSpace'
+// import ToDoScreen from '../screens/ToDo'
+// import ProfileScreen from '../screens/Profile'
 
 import './TabNavigator.css'
 
 const TabNavigator = () => {
   const location = useLocation()
   const navigate = useNavigate()
-  
+
   const tabs = [
     { id: 'home', path: '/', label: 'Home', icon: Home },
     { id: 'readspace', path: '/readspace', label: 'Reading Space', icon: BookOpen },
@@ -39,9 +39,9 @@ const TabNavigator = () => {
       <div className="tab-content">
         <Routes>
           <Route path="/" element={<HomeScreen />} />
-          <Route path="/readspace" element={<ReadSpaceScreen />} />
+          {/* <Route path="/readspace" element={<ReadSpaceScreen />} />
           <Route path="/todo" element={<ToDoScreen />} />
-          <Route path="/profile" element={<ProfileScreen />} />
+          <Route path="/profile" element={<ProfileScreen />} /> */}
         </Routes>
       </div>
 
@@ -50,7 +50,7 @@ const TabNavigator = () => {
         {tabs.map((tab) => {
           const Icon = tab.icon
           const isActive = currentTab === tab.id
-          
+
           return (
             <button
               key={tab.id}
@@ -58,9 +58,9 @@ const TabNavigator = () => {
               onClick={() => handleTabPress(tab)}
             >
               <div className="tab-icon-container">
-                <Icon 
-                  size={24} 
-                  color={isActive ? '#6366F1' : '#9CA3AF'} 
+                <Icon
+                  size={24}
+                  color={isActive ? '#6366F1' : '#9CA3AF'}
                   strokeWidth={isActive ? 2.5 : 2}
                 />
                 {isActive && (

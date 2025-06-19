@@ -20,7 +20,7 @@ import { StudyContext } from "../context/StudyContext";
 
 const { width } = Dimensions.get("window");
 
-const ReadingModeScreen = ({ route, navigation }) => {
+export const ReadingModeScreen = ({ route, navigation }) => {
   const { subject, schedule, onComplete } = route.params;
   const {
     activeSchedules,

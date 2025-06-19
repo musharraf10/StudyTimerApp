@@ -9,7 +9,7 @@ import SignupScreen from './screens/Signup'
 
 // Main App Components
 import TabNavigator from './navigation/TabNavigator'
-import ReadingModeScreen from './screens/ReadingScreen'
+// import ReadingModeScreen from './screens/ReadingScreen'
 import LoadingSpinner from './components/LoadingSpinner'
 
 // Styles
@@ -24,10 +24,10 @@ function App() {
       const vh = window.innerHeight * 0.01
       document.documentElement.style.setProperty('--vh', `${vh}px`)
     }
-    
+
     setVH()
     window.addEventListener('resize', setVH)
-    
+
     return () => window.removeEventListener('resize', setVH)
   }, [])
 
@@ -40,10 +40,10 @@ function App() {
       <div className="app">
         <AnimatePresence mode="wait">
           <Routes>
-            {user ? (
+            {!user ? (
               <>
                 <Route path="/*" element={<TabNavigator />} />
-                <Route path="/reading-mode" element={<ReadingModeScreen />} />
+                {/* <Route path="/reading-mode" element={<ReadingModeScreen />} /> */}
               </>
             ) : (
               <>
